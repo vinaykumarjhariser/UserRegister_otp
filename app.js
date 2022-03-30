@@ -11,55 +11,58 @@ app.use(express.json());
 // app.use('/user',userApi);
 const port = 3000
 
-let otp="";
-// Post method
-app.post('/signup', async(req,res, next)=>{
+
+let otp = "";
+
+app.post('/signup', async (req, res, next) => {
 
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
     const confirmpassword = req.body.confirmpassword;
-    if(password !== confirmpassword){
+    if (password !== confirmpassword) {
         res.json({
-            msg:"Password Not Matched!"
+            msg: "Password Not Matched!"
         })
-    }
-    else{
-           otp = otpGenerator.generate(4, { digits: true, upperCaseAlphabets: false, specialChars: false });
-        bcrypt.hash(password, 10, function(err, hash) {
+    } else {
+        otp = otpGenerator.generate(4, {
+            digits: true,
+            upperCaseAlphabets: true,
+            specialChars: true
+        });
+        bcrypt.hash(password, 10, function (err, hash) {
             // Store hash in your password DB.
-            if(err){
-               return res.json({
-                    result:"Something went Wrong",
-                    error:err
+            if (err) {
+                return res.json({
+                    result: "Something went Wrong",
+                    error: err
                 })
-            }
-            else{
-                const userDeatils = new userApi ({
-                    _id:new mongoose.Types.ObjectId(),
-                    username:username,
-                    email:email,
-                    password:hash,
-                    otp:otp
-                    
+            } else {
+                const userDeatils = new userApi({
+                    _id: new mongoose.Types.ObjectId(),
+                    username: username,
+                    email: email,
+                    password: hash,
+                    otp: otp
+
                 })
                 userDeatils.save()
-                .then(function(doc){
-                    res.status(201).json({
-                        msg: "User Registered Sucessfully",
-                        result:doc
+                    .then(function (doc) {
+                        res.status(201).json({
+                            msg: "User Registered Sucessfully",
+                            result: doc
+                        })
+                    }).catch(function (err) {
+                        res.json(err)
                     })
-                }).catch(function(err){
-                    res.json(err)
-                })
 
             }
 
         });
 
-      
+
     }
-  
+
 });
 
 let transporter = nodemailer.createTransport({
@@ -70,7 +73,7 @@ let transporter = nodemailer.createTransport({
 
     auth: {
         user: 'Your_mail',
-        pass: 'mail_password',
+        pass: 'Your_password',
     }
 
 });
@@ -86,7 +89,7 @@ app.post('/send', function (req, res) {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log(error);
+            return res.json(error);
         }
         console.log('Message sent: %s', info.messageId);
         console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
@@ -97,17 +100,15 @@ app.post('/send', function (req, res) {
 
 app.post('/verify', function (req, res) {
 
-    if (req.body.otp == otp) {
+    if (req.body.otp === otp) {
         res.send("You has been successfully registered");
-    }
-    else {
-        res.render('otp', { msg: 'otp is incorrect' });
+    } else {
+        res.render('otp', {
+            msg: 'otp is incorrect, Please try again!'
+        });
     }
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening on port ${port}`)
 })
-
-
-  

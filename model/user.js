@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 
-mongoose.connect('mongodb://localhost:27017/user', {
+mongoose.connect('mongodb://localhost:27017/User', {
 
     useNewUrlParser: true,
     useUnifiedTopology:true,
@@ -49,5 +49,5 @@ const UserSchema = new mongoose.Schema({
     }
 });
 //Model
-const userApi = mongoose.model('user', UserSchema);
+const userApi = mongoose.model('userApi', UserSchema);
 module.exports =userApi
